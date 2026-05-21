@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_PASSWORD: judge0
+      POSTGRES_USER: judge0
+      POSTGRES_DB: judge0
+
+  redis:
+    image: redis:6
+
+  server:
+    image: judge0/judge0:1.13.0-extra
+    ports:
+      - "2358:2358"
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+    depends_on:
+      - db
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://judge0:judge0@db:5432/judge0
+
+  workers:
+    image: judge0/judge0:1.13.0-extra
+    command: ["./scripts/workers"]
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+    depends_on:
+      - db
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://judge0:judge0@db:5432/judge0

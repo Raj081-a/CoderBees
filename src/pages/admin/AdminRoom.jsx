@@ -19,7 +19,7 @@ export default function AdminRoom() {
   const advanceRef = useRef(null);
 
   useEffect(() => {
-    const socket = io(`${process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000'}/room`);
+    const socket = io(`${process.env.REACT_APP_SOCKET_URL || 'https://coderbees-backend.onrender.com'}/room`);
     socketRef.current = socket;
 
     socket.on('roomCreated', ({ roomId }) => {

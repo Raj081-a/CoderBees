@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API = process.env.REACT_APP_API_URL || 'https://coderbees-backend.onrender.com/api';
 const TOPICS = ['general','arrays','linkedlist','stack','queue','trees','graph','sorting'];
 const DIFFS = ['Easy','Medium','Hard'];
 

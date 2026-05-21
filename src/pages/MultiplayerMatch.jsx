@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { useAuth } from '../context/AuthContext';
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API = process.env.REACT_APP_API_URL || 'https://coderbees-backend.onrender.com/api';
 
 export default function MultiplayerMatch() {
   const { user, token, updatePoints } = useAuth();
@@ -39,7 +39,7 @@ export default function MultiplayerMatch() {
   const timerColor = timeLeft > 600 ? '#43e97b' : timeLeft > 180 ? '#f7971e' : '#ff6584';
 
   const connectSocket = () => {
-    const socket = io(`${process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000'}/match`);
+    const socket = io(`${process.env.REACT_APP_SOCKET_URL || 'https://coderbees-backend.onrender.com'}/match`);
     socketRef.current = socket;
 
     socket.on('queueJoined', () => setPhase('queue'));

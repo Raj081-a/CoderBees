@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API = process.env.REACT_APP_API_URL || 'https://coderbees-backend.onrender.com/api';
 
 const packages = [
   { id: 'starter', name: '🥉 Starter', coins: 100, price: 29, desc: 'Perfect to start' },

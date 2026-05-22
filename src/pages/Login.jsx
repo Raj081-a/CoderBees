@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const API = process.env.REACT_APP_API_URL || 'https://coderbees-backend.onrender.com/api';
+const API = process.env.REACT_APP_API_URL || 'https://coderbees-backend.onrender.com/api/auth/login';
 
 export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' });

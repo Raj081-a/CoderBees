@@ -6,7 +6,11 @@ const Problem = require('../models/Problem');
 const fetch = require('node-fetch');
 
 const JUDGE0_URL = process.env.JUDGE0_URL || 'http://127.0.0.1:2358';
-const LANG_MAP = { cpp: 2, java: 4, python: 10 };
+const LANG_MAP = {
+  cpp: 54,
+  java: 62,
+  python: 71
+};
 
 // Judge0 submit + poll
 async function judge0Run(code, languageId, stdin) {
@@ -212,52 +216,20 @@ router.post('/run', async (req, res) => {
       return res.status(404).json({ error: 'Problem not found' });
     }
 
-    const langMap = {
-      python: 'python',
-      cpp: 'c++',
-      java: 'java'
-    };
+    const languageId = LANG_MAP[language];
+    if (!languageId) {
+      return res.status(400).json({ error: 'Unsupported language' });
+    }
 
     const results = [];
 
     for (const tc of problem.testCases) {
       try {
-        const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            language: langMap[language],
-            version: '*',
-            files: [
-              {
-                name:
-                  language === 'python'
-                    ? 'main.py'
-                    : language === 'java'
-                    ? 'Main.java'
-                    : 'main.cpp',
-                content: code
-              }
-            ],
-            stdin: tc.input || ''
-          })
-        });
-
-        const data = await response.json();
-
-        console.log('Piston response:', JSON.stringify(data, null, 2));
+        const result = await judge0Run(code, languageId, tc.input);
 
         const expected = (tc.output || '').trim();
-
-        const stdout = data.run && data.run.stdout ? data.run.stdout : '';
-        const stderr = data.run && data.run.stderr ? data.run.stderr : '';
-        const compileError = data.compile && data.compile.stderr ? data.compile.stderr : '';
-        const message = data.message || '';
-
-        const actual = stdout.trim();
-        const error = (compileError || stderr || message).trim();
+        const actual = result.stdout || '';
+        const error = result.stderr || '';
 
         results.push({
           input: tc.input,
@@ -266,7 +238,6 @@ router.post('/run', async (req, res) => {
           passed: !error && actual === expected,
           status: error ? 'Error' : actual === expected ? 'Accepted' : 'Wrong Answer'
         });
-
       } catch (e) {
         results.push({
           input: tc.input,
@@ -282,7 +253,6 @@ router.post('/run', async (req, res) => {
       results,
       allPassed: results.every(r => r.passed)
     });
-
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

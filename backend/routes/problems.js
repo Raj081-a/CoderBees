@@ -7,9 +7,9 @@ const fetch = require('node-fetch');
 
 const JUDGE0_URL = process.env.JUDGE0_URL || 'http://127.0.0.1:2358';
 const LANG_MAP = {
-  cpp: 54,
-  java: 62,
-  python: 71
+  cpp: 2,
+  java: 4,
+  python: 10
 };
 
 // Judge0 submit + poll

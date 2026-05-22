@@ -13,8 +13,7 @@ const LANG_MAP = {
   python: 10
 };
 
-
-  async function judge0Run(code, languageId, stdin) {
+async function judge0Run(code, languageId, stdin) {
   const res = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=false&wait=true`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -26,44 +25,16 @@ const LANG_MAP = {
   });
 
   const data = await res.json();
-
-  console.log("Judge0 result:", data);
+  console.log('Judge0 result:', data);
 
   return {
     stdout: (data.stdout || '').trim(),
     stderr: (data.stderr || '').trim(),
     compile_output: (data.compile_output || '').trim(),
+    message: data.message || '',
     status: data.status?.description || 'Unknown',
     statusId: data.status?.id
   };
-}
-
-  const submitData = await submitRes.json();
-  if (!submitData.token) {
-    throw new Error(`No token: ${JSON.stringify(submitData)}`);
-  }
-
-  for (let i = 0; i < 25; i++) {
-    await new Promise(r => setTimeout(r, 1000));
-
-    const pollRes = await fetch(`${JUDGE0_URL}/submissions/${submitData.token}?base64_encoded=true`);
-    const data = await pollRes.json();
-
-    if (data.status && data.status.id <= 2) continue;
-
-    const decode = (value) =>
-      value ? Buffer.from(value, 'base64').toString('utf8').trim() : '';
-
-    return {
-      stdout: decode(data.stdout),
-      stderr: decode(data.stderr),
-      compile_output: decode(data.compile_output),
-      status: data.status?.description || 'Unknown',
-      statusId: data.status?.id
-    };
-  }
-
-  throw new Error('Judge0 timeout');
 }
 
 // Run code
@@ -85,7 +56,7 @@ router.post('/run', async (req, res) => {
 
         const expected = (tc.output || '').trim();
         const stdout = result.stdout || '';
-        const error = result.stderr || result.compile_output || '';
+        const error = result.stderr || result.compile_output || result.message || '';
 
         results.push({
           input: tc.input,
@@ -193,7 +164,7 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// Get by slug - keep this near the end
+// Get by slug
 router.get('/:slug', async (req, res) => {
   try {
     const problem = await Problem.findOne({ slug: req.params.slug }, '-testCases');

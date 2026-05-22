@@ -13,16 +13,30 @@ const LANG_MAP = {
   python: 10
 };
 
-async function judge0Run(code, languageId, stdin) {
-  const submitRes = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=true&wait=false`, {
+
+  async function judge0Run(code, languageId, stdin) {
+  const res = await fetch(`${JUDGE0_URL}/submissions?base64_encoded=false&wait=true`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      source_code: Buffer.from(code || '').toString('base64'),
+      source_code: code || '',
       language_id: languageId,
-      stdin: Buffer.from(stdin || '').toString('base64')
+      stdin: stdin || ''
     })
   });
+
+  const data = await res.json();
+
+  console.log("Judge0 result:", data);
+
+  return {
+    stdout: (data.stdout || '').trim(),
+    stderr: (data.stderr || '').trim(),
+    compile_output: (data.compile_output || '').trim(),
+    status: data.status?.description || 'Unknown',
+    statusId: data.status?.id
+  };
+}
 
   const submitData = await submitRes.json();
   if (!submitData.token) {

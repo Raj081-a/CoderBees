@@ -8,9 +8,9 @@ const fetch = require('node-fetch');
 const JUDGE0_URL = process.env.JUDGE0_URL || 'http://127.0.0.1:2358';
 
 const LANG_MAP = {
-  cpp: 2,
-  java: 4,
-  python: 10
+  cpp: 54,
+  java: 62,
+  python: 71
 };
 
 async function judge0Run(code, languageId, stdin) {
@@ -38,37 +38,50 @@ async function judge0Run(code, languageId, stdin) {
 }
 
 // Run code
-router.post('/run', async (req, res) => {
+router.post('/run', auth, async (req, res) => {
   try {
     const { slug, code, language } = req.body;
-
     const problem = await Problem.findOne({ slug });
     if (!problem) return res.status(404).json({ error: 'Problem not found' });
 
-    const languageId = LANG_MAP[language];
-    if (!languageId) return res.status(400).json({ error: 'Unsupported language' });
-
+    const langMap = { cpp: 54, java: 62, python: 71 };
+    const languageId = langMap[language] || 71;
+    const fetch = require('node-fetch');
     const results = [];
 
     for (const tc of problem.testCases) {
       try {
-        const result = await judge0Run(code, languageId, tc.input);
+        const submitRes = await fetch(
+          'http://localhost:2358/submissions?base64_encoded=false&wait=true',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              source_code: code,
+              language_id: languageId,
+              stdin: tc.input || ''
+            })
+          }
+        );
 
+        const result = await submitRes.json();
+        const actual = (result.stdout || '').trim();
         const expected = (tc.output || '').trim();
-        const stdout = result.stdout || '';
-        const error = result.stderr || result.compile_output || result.message || '';
+        const stderr = result.stderr || result.compile_output || '';
+        const statusDesc = result.status?.description || 'Unknown';
 
         results.push({
           input: tc.input,
           expected,
-          actual: error ? `Error: ${error}` : stdout,
-          passed: !error && stdout === expected,
-          status: error ? 'Error' : stdout === expected ? 'Accepted' : 'Wrong Answer'
+          actual: stderr ? `Error: ${stderr.substring(0, 300)}` : actual,
+          passed: !stderr && actual === expected,
+          status: statusDesc
         });
+
       } catch (e) {
         results.push({
           input: tc.input,
-          expected: (tc.output || '').trim(),
+          expected: tc.output,
           actual: `Error: ${e.message}`,
           passed: false,
           status: 'Error'
@@ -80,6 +93,7 @@ router.post('/run', async (req, res) => {
       results,
       allPassed: results.every(r => r.passed)
     });
+
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

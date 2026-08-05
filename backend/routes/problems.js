@@ -52,16 +52,16 @@ router.post('/run', auth, async (req, res) => {
     for (const tc of problem.testCases) {
       try {
         const submitRes = await fetch(
-          'http://localhost:2358/submissions?base64_encoded=false&wait=true',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              source_code: code,
-              language_id: languageId,
-              stdin: tc.input || ''
-            })
-          }
+  `     ${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source_code: code,
+            language_id: languageId,
+            stdin: tc.input || ''
+        })
+        }
         );
 
         const result = await submitRes.json();

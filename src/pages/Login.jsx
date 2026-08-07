@@ -43,7 +43,7 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-card fade-up">
         <div className="auth-brand">🐝 CODERBEES</div>
-        <h2 className="auth-title">Welcome Back</h2>
+        <h2 className="auth-title">Welcome</h2>
         <p className="auth-sub">Sign in to continue your DSA journey</p>
 
         {error && <div className="auth-error">{error}</div>}
